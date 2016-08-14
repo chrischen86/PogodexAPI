@@ -27,11 +27,38 @@ $app->post('/pokemon', function(Request $request){
         return new Response('', 200);
     }
     
-    $response = array(
-        'text' => $username . ':' . $request->get('text')
-    );
+    $messageProcessor = new \framework\MessageProcessor();
+    $reader = $messageProcessor->process($request->get('text'));
     
-    return new Response(json_encode($response), 200);
+    $loader = new framework\JsonLoader();
+    $data = $loader->LoadJson(framework\JsonLoader::DefaultPath);
+    
+    $result = $reader->readData($data);
+    if ($result == null)
+    {
+        return new Response('', 200);
+    }
+    
+    $response = array(
+        'text' => 'The optimal moveset for _' . $result['pokemon'] 
+            . '_ is: \n*' . $result['battack'] . '* \n*' . $result['cattack'] . '*'
+    );
+    /*
+    $response = array(
+        'attachments' => array(
+            'title' => 'Title',
+            'pretext' => 'Pretext test',
+            'text' => 'Testing the text',
+            'mrkdwn_in' => array(
+                'text',
+                'pretext'
+            )
+        )
+    );
+    */
+    $responseString = json_encode($response);
+    $responseString = preg_replace('/\\\\\\\n/','\n', $responseString);
+    return new Response($responseString, 200);
     //return new Response('' . $data['user_name'] . ':' . $data['text'], 200);
 });
 

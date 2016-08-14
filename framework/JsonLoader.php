@@ -23,8 +23,8 @@ class JsonLoader {
     private function TrimJson($jsonString)
     {
         $start = strpos($jsonString, '{');
-        $length = strrpos($jsonString, '}') - $start;
-        //echo strlen($jsonString) . ' / ' . $start . ':' . $end;
+        $originalLength = strlen($jsonString);
+        $length = $originalLength - $start - 2;
         return substr($jsonString, $start, $length);
     }
 }

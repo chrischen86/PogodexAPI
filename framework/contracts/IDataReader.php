@@ -10,7 +10,8 @@
  *
  * @author Christopher
  */
-interface IQueryData {
+interface IDataReader {
     //put your code here
-    public function GetData($dataSource, $options);
+    public function readData($dataSource);
+    public function setOptions($options);
 }

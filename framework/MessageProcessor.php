@@ -14,9 +14,42 @@ namespace framework;
  * @author Christopher
  */
 class MessageProcessor {
-    //put your code here
-    public function Process($message)
+    private $mappings = array();
+    
+    function __construct() {
+        $this->mappings = array(
+            'moveset'   =>  array('/moveset/i', new MovesetReader())
+        );
+    }
+    
+    public function process($message)
     {
-        
+        foreach($this->mappings as $values)
+        {
+            $pattern = $values[0];
+            if (preg_match($pattern, $message) === 1)
+            {
+                $reader = $values[1];
+                $arguments = $this->buildArguments($message);
+                $reader->setOptions($arguments);
+                return $reader;
+            }
+            
+            return new UnknownReader();
+        }
+    }
+    
+    private function buildArguments($message)
+    {
+        $arguments = array();
+        foreach (Pokemon::getNames() as $name)
+        {
+            if (stripos($message, $name) !== FALSE)
+            {
+                $arguments['Pokemon'] = $name;
+                break;
+            }
+        }
+        return $arguments;
     }
 }
