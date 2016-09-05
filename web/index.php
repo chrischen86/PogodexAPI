@@ -39,6 +39,11 @@ $app->post('/pokemon', function(Request $request){
         return new Response('', 200);
     }
     
+    if ($reader instanceof framework\CloseMatchReader)
+    {
+        return new Response(json_encode($result), 200);
+    }
+    
     $response = array(
         'text' => 'The optimal moveset for _' . $result['pokemon'] 
             . '_ is: \n*' . $result['battack'] . '* \n*' . $result['cattack'] . '*'

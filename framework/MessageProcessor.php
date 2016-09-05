@@ -18,7 +18,7 @@ class MessageProcessor {
     
     function __construct() {
         $this->mappings = array(
-            'moveset'   =>  array('/moveset/i', new MovesetReader())
+            'moveset'   =>  array('/moveset|move set/i', new MovesetReader())
         );
     }
     
@@ -31,6 +31,10 @@ class MessageProcessor {
             {
                 $reader = $values[1];
                 $arguments = $this->buildArguments($message);
+                if ($arguments['FindClosest'] && $arguments['Pokemon'] == null)
+                {
+                    $reader = new CloseMatchReader();
+                }
                 $reader->setOptions($arguments);
                 return $reader;
             }
@@ -42,6 +46,11 @@ class MessageProcessor {
     private function buildArguments($message)
     {
         $arguments = array();
+        $arr = explode(" ", $message);
+        $findClosest = sizeof($arr) == 2 && preg_match('/moveset|move set/i', $arr[0]) === 1;
+        $shortest = -1;
+        $arguments['FindClosest'] = $findClosest;
+        
         foreach (Pokemon::getNames() as $name)
         {
             if (stripos($message, $name) !== FALSE)
@@ -49,7 +58,19 @@ class MessageProcessor {
                 $arguments['Pokemon'] = $name;
                 break;
             }
+            if (!$findClosest)
+            {
+                continue;
+            }
+
+            $lev = levenshtein($arr[1], $name);
+            if ($lev <= $shortest || $shortest < 0) 
+            {
+                $closest  = $name;
+                $shortest = $lev;
+            }
         }
+        $arguments['ClosestPokemon'] = $closest;
         return $arguments;
     }
 }

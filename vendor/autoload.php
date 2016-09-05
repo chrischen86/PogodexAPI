@@ -10,5 +10,6 @@ require_once __DIR__ . '/..' . '/framework' . '/Pokemon.php';
 require_once __DIR__ . '/..' . '/framework/contracts' . '/IDataReader.php';
 require_once __DIR__ . '/..' . '/framework/readers' . '/MovesetReader.php';
 require_once __DIR__ . '/..' . '/framework/readers' . '/UnknownReader.php';
+require_once __DIR__ . '/..' . '/framework/readers' . '/CloseMatchReader.php';
 
 return ComposerAutoloaderInit60b62456bc12ac2226cdc336cecb6dc9::getLoader();
