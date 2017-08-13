@@ -1,5 +1,7 @@
 {
     "require": {
-        "silex/silex": "~2.0"
+        "silex/silex": "~2.0",
+        "nategood/httpful": "^0.2.20",
+        "fluentdom/fluentdom": "^6.2"
     }
 }

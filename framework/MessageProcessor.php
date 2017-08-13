@@ -8,41 +8,50 @@
 
 namespace framework;
 
+use FluentDOM;
+
 /**
  * Description of CommandProcessor
  *
  * @author Christopher
  */
-class MessageProcessor {
-    private $mappings = array();
-    
-    function __construct() {
-        $this->mappings = array(
-            'moveset'   =>  array('/moveset|move set/i', new MovesetReader())
-        );
-    }
-    
-    public function process($message)
+class MessageProcessor
+{
+    private $Regex = '/moveset|move set/i';
+
+    public function Process($message)
     {
-        foreach($this->mappings as $values)
+        if (preg_match($this->Regex, $message) !== 1)
         {
-            $pattern = $values[0];
-            if (preg_match($pattern, $message) === 1)
-            {
-                $reader = $values[1];
-                $arguments = $this->buildArguments($message);
-                if ($arguments['FindClosest'] && $arguments['Pokemon'] == null)
-                {
-                    $reader = new CloseMatchReader();
-                }
-                $reader->setOptions($arguments);
-                return $reader;
-            }
-            
-            return new UnknownReader();
+            return null;
         }
+
+        $arr = explode(" ", $message);
+        $pokemonRepository = new \dal\PokemonRepository();
+        $pokemon = $pokemonRepository->GetPokemon($arr[1]);
+        if ($pokemon == null)
+        {
+            return null;
+        }
+
+        $api = new \api\GameinfoApi();
+        $rawData = $api->GetMoveListData($pokemon);
+
+        $document = FluentDOM::load($rawData, 'text/html');
+        $quick = str_replace(chr(194) . chr(160), '', $document
+                        ->find("//div[@class='movesets-table'] //div[@class='moves'] //a")
+                        ->first()
+                        ->text()
+        );
+        $charge = str_replace(chr(194) . chr(160), '', $document->find("//div[@class='movesets-table'] //div[@class='moves'] //a")
+                        ->first()
+                        ->next()
+                        ->text()
+        );
+
+        return array('quick' => trim($quick), 'charge' => trim($charge), 'pokemon' => $pokemon->name);
     }
-    
+
     private function buildArguments($message)
     {
         $arguments = array();
@@ -50,7 +59,7 @@ class MessageProcessor {
         $findClosest = sizeof($arr) == 2 && preg_match('/moveset|move set/i', $arr[0]) === 1;
         $shortest = -1;
         $arguments['FindClosest'] = $findClosest;
-        
+
         foreach (Pokemon::getNames() as $name)
         {
             if (stripos($message, $name) !== FALSE)
@@ -64,13 +73,14 @@ class MessageProcessor {
             }
 
             $lev = levenshtein($arr[1], $name);
-            if ($lev <= $shortest || $shortest < 0) 
+            if ($lev <= $shortest || $shortest < 0)
             {
-                $closest  = $name;
+                $closest = $name;
                 $shortest = $lev;
             }
         }
         $arguments['ClosestPokemon'] = $closest;
         return $arguments;
     }
+
 }
